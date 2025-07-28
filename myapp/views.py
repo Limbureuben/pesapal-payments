@@ -31,6 +31,7 @@ class PesaPalPaymentView(APIView):
                 "details": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class PesaPalCallbackView(APIView):
     def post(self, request):
         data = request.data
