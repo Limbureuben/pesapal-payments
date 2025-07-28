@@ -160,9 +160,16 @@ PESAPAL_NOTIFICATION_ID = config('PESAPAL_NOTIFICATION_ID')
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'e6fa9da9555e.ngrok-free.app',  # <-- Add your ngrok domain here
+    '44ec6f7dab00.ngrok-free.app',  # <-- Add your ngrok domain here
 ]
 
 
 from dotenv import load_dotenv # type: ignore
 load_dotenv()
+
+
+
+PESAPAL_CONSUMER_KEY = 'ngW+UEcnDhltUc5fxPfrCD987xMh3Lx8'
+PESAPAL_CONSUMER_SECRET = 'q27RChYs5UkypdcNYKzuUw460Dg='
+PESAPAL_IPN_NOTIFICATION_ID = 'e99b7b28-5dbe-4803-a52f-db84949177ae'
+PESAPAL_CALLBACK_URL = 'https://44ec6f7dab00.ngrok-free.app/api/pesapal/initiate/'
