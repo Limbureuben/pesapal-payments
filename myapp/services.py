@@ -1,27 +1,48 @@
+import uuid
+from .models import Transaction
 import requests
-from django.conf import settings
+import os
 
+class PesaPalService:
+    def initiate_payment(self, phone_number):
+        reference = str(uuid.uuid4())
 
-def initiate_payment(self, phone_number):
-    url = f"{self.base_url}/api/Transactions/SubmitOrderRequest"
-    headers = {
-        "Authorization": f"Bearer {self.token}"
-    }
-    payload = {
-        "id": settings.PESAPAL_NOTIFICATION_ID,
-        "currency": "KES",
-        "amount": "1",  # For testing; set real amount later
-        "description": "E-Commerce Order Payment",
-        "callback_url": "https://yourdomain.com/payment/callback",
-        "notification_id": settings.PESAPAL_NOTIFICATION_ID,
-        "billing_address": {
-            "phone_number": phone_number,
-            "email_address": "test@example.com",  # Optional
-            "country_code": "KE",                # or "TZ" etc.
-            "first_name": "Customer",
-            "last_name": "Name",
+        # Save transaction
+        transaction = Transaction.objects.create(
+            phone=phone_number,
+            reference=reference,
+            status='pending'
+        )
+
+        # Prepare headers and payload
+        access_token = self.get_access_token()  # You must have this method
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
         }
-    }
 
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
+        payload = {
+            "phoneNumber": phone_number,
+            "amount": "100",  # Customize amount
+            "reference": reference,
+            "description": "Payment for product/service",
+            "currency": "TZS",
+            "callbackUrl": "https://your-domain.com/api/pesapal/callback"
+        }
+
+        # Call PesaPal API to trigger STK Push
+        response = requests.post(
+            f"{os.getenv('PESAPAL_BASE_URL')}/api/PostPesapalDirectOrderV4",
+            json=payload,
+            headers=headers
+        )
+
+        # Process response
+        if response.status_code == 200:
+            data = response.json()
+            transaction.pesapal_transaction_id = data.get("transaction_id")
+            transaction.save()
+            return data
+        else:
+            print("Error from PesaPal:", response.text)
+            return {"error": "Failed to initiate payment"}

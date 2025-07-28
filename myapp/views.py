@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView # type: ignore
 from rest_framework.response import Response # type: ignore
 from .services import PesaPalService
+from .models import *
 
 # Create your views here.
 class PesaPalPaymentView(APIView):
@@ -30,20 +31,14 @@ class PesaPalPaymentView(APIView):
 class PesaPalCallbackView(APIView):
     def post(self, request):
         data = request.data
-        print("📩 PesaPal Callback Received:", data)
 
-        order_tracking_id = data.get("order_tracking_id")
-        status_code = data.get("status")
-        payment_method = data.get("payment_method")
+        transaction_id = data.get("transaction_id")
+        status = data.get("status")  # "COMPLETED", "FAILED"
 
-        if not order_tracking_id:
-            return Response({"error": "Missing tracking ID"}, status=400)
-
-        # ✅ OPTIONAL: update transaction in DB
-        # from .models import Transaction
-        # Transaction.objects.filter(order_tracking_id=order_tracking_id).update(
-        #     status=status_code,
-        #     payment_method=payment_method
-        # )
-
-        return Response({"message": "Callback received"}, status=200)
+        try:
+            transaction = Transaction.objects.get(pesapal_transaction_id=transaction_id)
+            transaction.status = status.lower()
+            transaction.save()
+            return Response({"message": "Transaction updated successfully"})
+        except Transaction.DoesNotExist:
+            return Response({"error": "Transaction not found"}, status=404)
