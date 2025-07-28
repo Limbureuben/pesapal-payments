@@ -3,6 +3,8 @@ from rest_framework.views import APIView # type: ignore
 from rest_framework.response import Response # type: ignore
 from .services import PesaPalService
 from .models import *
+from rest_framework import status # type: ignore
+import traceback  # For logging exceptions
 
 # Create your views here.
 class PesaPalPaymentView(APIView):
@@ -10,23 +12,24 @@ class PesaPalPaymentView(APIView):
         phone = request.data.get("phone")
 
         if not phone:
-            return Response({"error": "Phone number is required"}, status=400)
+            return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             pesapal = PesaPalService()
             response = pesapal.initiate_payment(phone_number=phone)
 
-            # Optionally log or save transaction record here
+            # If the service returned an error dict, handle it
+            if isinstance(response, dict) and response.get("error"):
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(response)
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print("Error during PesaPal initiation:", e)
-            return Response({"error": "Payment initiation failed."}, status=500)
-
-
-
-
+            traceback.print_exc()  # logs full error to console
+            return Response({
+                "error": "Payment initiation failed",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PesaPalCallbackView(APIView):
     def post(self, request):

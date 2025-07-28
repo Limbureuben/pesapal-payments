@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-5koptsp0k!o5@&zk5$d1555dr3o!&i7rc00u@p8_fdi4wzjrc#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -155,3 +155,14 @@ PESAPAL_BASE_URL = config('PESAPAL_BASE_URL')
 PESAPAL_CONSUMER_KEY = config('PESAPAL_CONSUMER_KEY')
 PESAPAL_CONSUMER_SECRET = config('PESAPAL_CONSUMER_SECRET')
 PESAPAL_NOTIFICATION_ID = config('PESAPAL_NOTIFICATION_ID')
+
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'e6fa9da9555e.ngrok-free.app',  # <-- Add your ngrok domain here
+]
+
+
+from dotenv import load_dotenv # type: ignore
+load_dotenv()
